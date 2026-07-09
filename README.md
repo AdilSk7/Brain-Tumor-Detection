@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # NeuroScan — Brain Tumour MRI Classifier
 
 Flask web application for classifying brain MRI scans using a federated Xception model.
@@ -77,3 +78,6 @@ Open **http://127.0.0.1:5000** in your browser.
 - Class order in the model must match: `["glioma", "meningioma", "notumor", "pituitary"]`
   If your model was trained with a different class ordering adjust `CLASS_NAMES` in `app.py`.
 - For production deployment use Gunicorn and disable `debug=True`.
+=======
+# Brain-Tumor-Detection
+>>>>>>> 0ac33fdb30428f7217be1563e06ec30f3e7cc7bf
