@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuroScan — Brain Tumour MRI Classifier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <nav class="navbar">
+    <div class="nav-logo">
+      <span class="logo-pulse"></span>
+      NeuroScan
+    </div>
+    <div class="nav-info">
+      <span class="nav-tag">Xception + Federated Learning</span>
+      <span class="nav-dot"></span>
+      <span class="nav-tag">4-Class MRI</span>
+    </div>
+    <button id="themeToggle" class="theme-toggle">🌙</button>
+  </nav>
+
+  <main class="main">
+
+    <header class="hero">
+      <div class="hero-badge">
+        <span class="pulse-ring"></span>
+        AI-Powered Diagnosis Tool
+      </div>
+      <h1>Brain Tumour<br /><span class="gradient-text">MRI Classifier</span></h1>
+      <p class="hero-sub">
+        Upload a brain MRI scan and receive an instant AI-powered classification
+        across four categories using our federated Xception model.
+      </p>
+    </header>
+
+    <div class="app-card">
+
+      <div class="upload-panel" id="uploadPanel">
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.webp,.bmp" hidden />
+
+          <div class="drop-idle" id="dropIdle">
+            <div class="drop-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <p class="drop-title">Drag &amp; drop your MRI scan</p>
+            <p class="drop-sub">or click to browse</p>
+            <button class="btn-browse" onclick="document.getElementById('fileInput').click()">
+              Choose File
+            </button>
+            <p class="drop-hint">PNG, JPG, JPEG, WEBP, BMP · Max 16 MB</p>
+          </div>
+
+          <div class="drop-preview" id="dropPreview" hidden>
+            <img id="previewImg" src="" alt="MRI Preview" />
+            <div class="preview-info">
+              <span class="preview-name" id="previewName"></span>
+              <button class="btn-remove" id="btnRemove" title="Remove image">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-banner" id="errorBanner" hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span id="errorMsg"></span>
+        </div>
+
+        <button class="btn-predict" id="btnPredict" disabled onclick="runPrediction()">
+          <span class="btn-label">Analyse MRI Scan</span>
+          <span class="btn-spinner" hidden>
+            <svg class="spinner" viewBox="0 0 50 50">
+              <circle cx="25" cy="25" r="20" fill="none" stroke-width="4"/>
+            </svg>
+            Analysing…
+          </span>
+          <svg class="btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="panel-divider" aria-hidden="true"></div>
+
+      <div class="result-panel" id="resultPanel">
+
+        <div class="result-empty" id="resultEmpty">
+          <div class="empty-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <p>Upload an MRI scan to see the prediction results here.</p>
+        </div>
+
+        <div class="result-content" id="resultContent" hidden>
+
+          <div class="result-header">
+            <span class="result-tag">Prediction Result</span>
+          </div>
+
+          <div class="pred-box" id="predBox">
+            <div class="pred-label-row">
+              <span class="pred-class" id="predClass">—</span>
+              <span class="pred-severity" id="predSeverity"></span>
+            </div>
+            <p class="pred-desc" id="predDesc"></p>
+          </div>
+          <div class="conf-section">
+            <div class="conf-header">
+              <span class="conf-label">Confidence</span>
+              <span class="conf-value" id="confValue">—</span>
+            </div>
+            <div class="conf-bar-bg">
+              <div class="conf-bar-fill" id="confBar"></div>
+            </div>
+          </div>
+
+          <div class="scores-section">
+            <div class="scores-title">All Class Probabilities</div>
+            <div class="scores-list" id="scoresList"></div>
+          </div>
+          <button class="btn-reset" onclick="resetAll()">Run Another Scan</button>
+
+        </div>
+      </div>
+
+    </div>
+    <div class="legend">
+      <div class="legend-item">
+        <span class="legend-dot" style="background:#ef4444"></span>
+        <span class="legend-name">Glioma</span>
+        <span class="legend-desc">Glial cell tumour</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot" style="background:#f59e0b"></span>
+        <span class="legend-name">Meningioma</span>
+        <span class="legend-desc">Membrane tumour</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot" style="background:#10b981"></span>
+        <span class="legend-name">No Tumour</span>
+        <span class="legend-desc">Healthy scan</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot" style="background:#6366f1"></span>
+        <span class="legend-name">Pituitary</span>
+        <span class="legend-desc">Pituitary gland tumour</span>
+      </div>
+    </div>
+  </main>
+  <footer class="footer">
+    <p>NeuroScan · Xception + Federated Learning · For research use only</p>
+    <p class="footer-sub">Not a substitute for professional medical diagnosis.</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
