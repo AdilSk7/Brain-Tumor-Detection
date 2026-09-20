@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # NeuroScan — Brain Tumour MRI Classifier
 
 Flask web application for classifying brain MRI scans using a federated Xception model.
